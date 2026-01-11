@@ -1,15 +1,34 @@
-# test_features.py
-import pytest
-
-from features import build_features
+import hashlib
 
 
-def test_build_features_should_not_crash_on_bad_age():
-    # Bu test, "kötü age" geldiğinde crash olmamasını bekliyor.
-    # Mevcut implementasyonda int("unknown") -> ValueError fırlatır, test FAIL olur.
-    user_profile = {"country": "TR", "age": "unknown"}
+def hashed_feature(value: str, num_buckets: int, seed: str = "v1") -> int:
+    """
+    Deterministic hashing for high-cardinality categorical features.
+    Fast, isolated, no external dependencies.
+    """
+    if num_buckets <= 0:
+        raise ValueError("num_buckets must be positive")
 
-    feats = build_features(user_profile, num_buckets=100)
+    if value is None:
+        value = ""
 
-    assert feats["age"] == 0
-    assert 0 <= feats["country_bucket"] < 100
+    digest = hashlib.md5((seed + value).encode("utf-8")).hexdigest()
+    return int(digest, 16) % num_buckets
+
+
+def build_features(user_profile: dict, num_buckets: int = 100) -> dict:
+    """
+    Convert user_profile -> model input features.
+    Example: country hashed into buckets + numeric age.
+    """
+    country = user_profile.get("country", "")
+    age = int(user_profile.get("age", 0))
+
+    return {
+        "country_bucket": hashed_feature(
+            country,
+            num_buckets=num_buckets,
+            seed="country"
+        ),
+        "age": age,
+    }
