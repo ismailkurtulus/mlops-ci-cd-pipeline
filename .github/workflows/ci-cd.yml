@@ -25,13 +25,19 @@ jobs:
 
       # ---- Commit Stage ----
       - name: Unit tests
-        run: pytest tests/test_unit_features.py
+  env:
+    PYTHONPATH: .
+  run: pytest tests/test_unit_features.py
+
 
       - name: Lint
         run: flake8 app tests
 
-      - name: Component tests
-        run: pytest tests/test_component_api.py
+    - name: Component tests
+  env:
+    PYTHONPATH: .
+  run: pytest tests/test_component_api.py
+
 
       # ---- Package once ----
       - name: Build Docker image
