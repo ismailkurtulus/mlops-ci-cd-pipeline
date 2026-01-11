@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS users (
+  user_id TEXT PRIMARY KEY,
+  country TEXT NOT NULL,
+  age INTEGER NOT NULL
+);
